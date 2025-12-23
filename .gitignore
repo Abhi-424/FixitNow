@@ -41,3 +41,11 @@ coverage/
 *.tmp
 temp/
 diagnostic.log
+
+# Utility and debug scripts (contain hardcoded credentials)
+backend/createAdmin.js
+backend/debug-*.js
+backend/test-*.js
+backend/clearUsers.js
+backend/check-backend.js
+backend/diagnose-server.js

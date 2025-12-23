@@ -33,3 +33,12 @@ coverage/
 # Temporary files
 *.tmp
 temp/
+
+# Utility and debug scripts (contain hardcoded credentials)
+createAdmin.js
+debug-*.js
+test-*.js
+clearUsers.js
+check-backend.js
+diagnose-server.js
+diagnostic.log
