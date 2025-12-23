@@ -1,0 +1,66 @@
+﻿
+> frontend@0.0.0 build
+> vite build
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 14 modules transformed.
+node.exe : 
+[31mΓ£ù[39m Build 
+failed in 338ms
+At line:1 char:1
++ & "C:\nvm4w\nodejs/
+node.exe" "C:\nvm4w\n
+odejs/node_modules/np
+m/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ([31mΓ£   
+ ù[39m Build fai    
+led in 338ms:Str    
+ing) [], RemoteE    
+xception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+[31merror during 
+build:
+[31mCould not 
+resolve 
+"./assets/react.svg" 
+from 
+"src/App.jsx"[31m
+file: [36mA:/project
+s/FixitNow/frontend/s
+rc/App.jsx[31m
+    at 
+getRollupError (file:
+///A:/projects/FixitN
+ow/frontend/node_modu
+les/rollup/dist/es/sh
+ared/parseAst.js:401:
+41)
+    at error (file://
+/A:/projects/FixitNow
+/frontend/node_module
+s/rollup/dist/es/shar
+ed/parseAst.js:397:42
+)
+    at ModuleLoader.h
+andleInvalidResolvedI
+d (file:///A:/project
+s/FixitNow/frontend/n
+ode_modules/rollup/di
+st/es/shared/node-ent
+ry.js:21633:24)
+    at file:///A:/pro
+jects/FixitNow/fronte
+nd/node_modules/rollu
+p/dist/es/shared/node
+-entry.js:21593:26[3
+9m
