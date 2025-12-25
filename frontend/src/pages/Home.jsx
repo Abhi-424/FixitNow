@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import useAuthNavigate from "../hooks/useAuthNavigate";
 
 // Import hero slider images
 import electricianImg from "../assets/hero-slider/electrician.png";
@@ -9,6 +10,7 @@ import repairImg from "../assets/hero-slider/repair.png";
 import supportImg from "../assets/hero-slider/support.png";
 
 const Home = () => {
+  const authNavigate = useAuthNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const heroImages = [electricianImg, plumberImg, repairImg, supportImg];
@@ -37,9 +39,12 @@ const Home = () => {
                 Connect with verified professionals for all your home service needs. Fast, reliable, and secure.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/register" className="px-10 py-4 bg-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-transform text-center">
+                <button
+                  onClick={() => authNavigate('/dashboard/user', '/register')}
+                  className="px-10 py-4 bg-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-transform text-center"
+                >
                   Get Started Free
-                </Link>
+                </button>
                 <Link to="/services" className="px-10 py-4 border-2 border-blue-600 text-blue-600 font-bold rounded-xl hover:bg-blue-50 hover:scale-105 transition-transform text-center">
                   Explore Services
                 </Link>
@@ -200,16 +205,16 @@ const Home = () => {
 
           {/* Clean Button Group */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link
-              to="/register"
+            <button
+              onClick={() => authNavigate('/dashboard/user', '/register')}
               className="w-full sm:w-auto px-12 py-5 bg-orange-500 text-white font-bold rounded-2xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 hover:scale-105 transition-all duration-300 text-xl"
             >
               Get Started Free
-            </Link>
+            </button>
 
             <Link
               to="/services"
-              className="w-full sm:w-auto px-12 py-5 bg-white text-blue-900 border-2 border-blue-100 font-bold rounded-2xl hover:bg-blue-50 transition-all duration-300 text-xl shadow-sm"
+              className="w-full sm:w-auto px-12 py-5 bg-white text-blue-900 border-2 border-blue-100 font-bold rounded-2xl hover:bg-blue-50 transition-all duration-300 text-xl shadow-sm inline-block text-center"
             >
               Explore Services
             </Link>

@@ -6,6 +6,7 @@ import Contact from "../pages/Contact";
 import Login from "../components/auth/Login";
 import Register from "../components/auth/Register";
 import Services from "../pages/Services";
+import BookService from "../pages/BookService";
 import UserDashboard from "../components/dashboard/UserDashboard";
 import ProviderDashboard from "../components/dashboard/ProviderDashboard";
 import AdminDashboard from "../components/dashboard/AdminDashboard";
@@ -21,6 +22,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/services" element={<Services />} />
+      <Route path="/book-service/:serviceId" element={<ProtectedRoute allowedRoles={['user']}><BookService /></ProtectedRoute>} />
       <Route path="/dashboard/user" element={<ProtectedRoute allowedRoles={['user']}><UserDashboard /></ProtectedRoute>} />
       <Route path="/dashboard/provider" element={<ProtectedRoute allowedRoles={['provider']}><ProviderDashboard /></ProtectedRoute>} />
       <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
