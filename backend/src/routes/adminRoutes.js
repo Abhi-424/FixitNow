@@ -4,7 +4,9 @@ const {
   getDashboardStats, 
   getAllUsers, 
   getAllProviders, 
-  updateUserStatus 
+  updateUserStatus,
+  getAllBookings,
+  adminUpdateBookingStatus
 } = require('../controllers/adminController');
 const { protect, adminOnly } = require('../middlewares/authMiddleware');
 
@@ -16,5 +18,9 @@ router.get('/stats', getDashboardStats);
 router.get('/users', getAllUsers);
 router.get('/providers', getAllProviders);
 router.patch('/users/:id/status', updateUserStatus);
+
+// Booking Governance
+router.get('/bookings', getAllBookings);
+router.patch('/bookings/:id/status', adminUpdateBookingStatus);
 
 module.exports = router;

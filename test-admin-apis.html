@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin API Test</title>
+</head>
+<body>
+    <h1>Admin Dashboard API Test</h1>
+    <button onclick="testApis()">Test APIs</button>
+    <div id="results"></div>
+
+    <script>
+        async function testApis() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing...</p>';
+
+            try {
+                // Login first
+                const loginRes = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@fixitnow.com',
+                        password: 'admin123'
+                    })
+                });
+                const loginData = await loginRes.json();
+                const token = loginData.token;
+
+                const headers = { 'Authorization': `Bearer ${token}` };
+
+                // Test stats
+                const statsRes = await fetch('http://localhost:5000/api/admin/stats', { headers });
+                const stats = await statsRes.json();
+
+                // Test users
+                const usersRes = await fetch('http://localhost:5000/api/admin/users', { headers });
+                const users = await usersRes.json();
+
+                // Test providers
+                const providersRes = await fetch('http://localhost:5000/api/admin/providers', { headers });
+                const providers = await providersRes.json();
+
+                results.innerHTML = `
+                    <h2>Results:</h2>
+                    <h3>Stats:</h3>
+                    <pre>${JSON.stringify(stats, null, 2)}</pre>
+                    
+                    <h3>Users (${users.length}):</h3>
+                    <pre>${JSON.stringify(users, null, 2)}</pre>
+                    
+                    <h3>Providers (${providers.length}):</h3>
+                    <pre>${JSON.stringify(providers, null, 2)}</pre>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
