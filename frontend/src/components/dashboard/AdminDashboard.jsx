@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
 
 const AdminDashboard = () => {
    const { user } = useAuth();
@@ -12,6 +13,8 @@ const AdminDashboard = () => {
    const [providers, setProviders] = useState([]);
    const [bookings, setBookings] = useState([]);
    const [services, setServices] = useState([]);
+   const [messages, setMessages] = useState([]);
+   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState(null);
@@ -29,36 +32,35 @@ const AdminDashboard = () => {
    const fetchData = async () => {
       try {
          setLoading(true);
-         const storedUser = localStorage.getItem('user');
-         const userData = storedUser ? JSON.parse(storedUser) : null;
-         const token = userData?.token;
 
-         if (!token) {
-            setError('No authentication token found. Please login again.');
-            setLoading(false);
-            return;
-         }
-
-         const headers = { 'Authorization': `Bearer ${token}` };
-
-         // Parallel fetching
-         const [statsRes, usersRes, providersRes, bookingsRes, servicesRes] = await Promise.all([
-            fetch('http://localhost:5000/api/admin/stats', { headers }),
-            fetch('http://localhost:5000/api/admin/users', { headers }),
-            fetch('http://localhost:5000/api/admin/providers', { headers }),
-            fetch('http://localhost:5000/api/admin/bookings', { headers }),
-            fetch('http://localhost:5000/api/services/admin/all', { headers }) // admin - includes inactive
+         // Parallel fetching using centralized API service
+         const responses = await Promise.all([
+            api.get('/admin/stats'),
+            api.get('/admin/users'),
+            api.get('/admin/providers'),
+            api.get('/admin/bookings'),
+            api.get('/services/admin/all'),
+            api.get('/contact')
          ]);
 
-         if (statsRes.ok) setStats(await statsRes.json());
-         if (usersRes.ok) setUsers(await usersRes.json());
-         if (providersRes.ok) setProviders(await providersRes.json());
-         if (bookingsRes.ok) setBookings(await bookingsRes.json());
-         if (servicesRes.ok) setServices(await servicesRes.json());
+         const [statsRes, usersRes, providersRes, bookingsRes, servicesRes, messagesRes] = responses;
+
+         setStats(statsRes.data);
+         setUsers(usersRes.data);
+         setProviders(providersRes.data);
+         setBookings(bookingsRes.data);
+         setServices(servicesRes.data);
+         setMessages(messagesRes.data);
+         setUnreadMessagesCount(messagesRes.data.filter(m => m.status === 'New').length);
 
       } catch (err) {
          console.error("Error fetching admin data:", err);
-         setError("Failed to load dashboard data.");
+         if (err.response?.status === 401) {
+            localStorage.removeItem('user');
+            setError("Session expired. Please login again.");
+         } else {
+            setError("Failed to load dashboard data.");
+         }
       } finally {
          setLoading(false);
       }
@@ -67,30 +69,13 @@ const AdminDashboard = () => {
    // User/Provider Status Updates
    const handleStatusUpdate = async (userId, newStatus) => {
       try {
-         const storedUser = localStorage.getItem('user');
-         const userData = storedUser ? JSON.parse(storedUser) : null;
-         const token = userData?.token;
-
-         if (!token) {
-            alert('Please login again');
-            return;
-         }
-
-         const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ status: newStatus })
-         });
-         if (res.ok) {
-            alert(`User status updated to ${newStatus} successfully!`);
-            fetchData(); // Refresh all data
-         } else {
-            const errorData = await res.json();
-            alert("Failed to update status: " + (errorData.message || 'Unknown error'));
-         }
+         await api.patch(`/admin/users/${userId}/status`, { status: newStatus });
+         alert(`User status updated to ${newStatus} successfully!`);
+         fetchData(); // Refresh all data
       } catch (err) {
          console.error(err);
-         alert("Error updating status: " + err.message);
+         const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+         alert("Error updating status: " + errorMessage);
       }
    };
 
@@ -98,30 +83,13 @@ const AdminDashboard = () => {
    const handleBookingStatus = async (bookingId, newStatus) => {
       if (!window.confirm(`Are you sure you want to force status to ${newStatus}?`)) return;
       try {
-         const storedUser = localStorage.getItem('user');
-         const userData = storedUser ? JSON.parse(storedUser) : null;
-         const token = userData?.token;
-
-         if (!token) {
-            alert('Please login again');
-            return;
-         }
-
-         const res = await fetch(`http://localhost:5000/api/admin/bookings/${bookingId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ status: newStatus })
-         });
-         if (res.ok) {
-            alert(`Booking status updated to ${newStatus} successfully!`);
-            fetchData();
-         } else {
-            const errorData = await res.json();
-            alert("Failed to update booking status: " + (errorData.message || 'Unknown error'));
-         }
+         await api.patch(`/admin/bookings/${bookingId}/status`, { status: newStatus });
+         alert(`Booking status updated to ${newStatus} successfully!`);
+         fetchData();
       } catch (err) {
          console.error(err);
-         alert("Error updating booking status: " + err.message);
+         const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+         alert("Error updating booking status: " + errorMessage);
       }
    };
 
@@ -129,95 +97,43 @@ const AdminDashboard = () => {
    const handleServiceSubmit = async (e) => {
       e.preventDefault();
       try {
-         const storedUser = localStorage.getItem('user');
-         const userData = storedUser ? JSON.parse(storedUser) : null;
-         const token = userData?.token;
-
-         if (!token) {
-            alert('Please login again');
-            return;
-         }
-
-         const url = isEditingService
-            ? `http://localhost:5000/api/services/${isEditingService}`
-            : 'http://localhost:5000/api/services';
-
-         const method = isEditingService ? 'PUT' : 'POST';
-
-         const res = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(serviceForm)
-         });
-
-         if (res.ok) {
-            setServiceForm({ name: '', description: '', category: 'Plumbing', basePrice: 0, imageUrl: '', isActive: true });
-            setIsEditingService(null);
-            fetchData(); // refresh services
-            alert(isEditingService ? "Service updated successfully!" : "Service created successfully!");
+         if (isEditingService) {
+            await api.put(`/services/${isEditingService}`, serviceForm);
          } else {
-            const errorData = await res.json();
-            alert("Failed to save service: " + (errorData.message || 'Unknown error'));
+            await api.post('/services', serviceForm);
          }
+
+         setServiceForm({ name: '', description: '', category: 'Plumbing', basePrice: 0, imageUrl: '', isActive: true });
+         setIsEditingService(null);
+         fetchData(); // refresh services
+         alert(isEditingService ? "Service updated successfully!" : "Service created successfully!");
       } catch (err) {
          console.error(err);
-         alert("Error saving service: " + err.message);
+         const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+         alert("Error saving service: " + errorMessage);
       }
    };
 
    const deleteService = async (id) => {
       if (!window.confirm("Are you sure? This will deactivate the service and prevent new bookings.")) return;
       try {
-         const storedUser = localStorage.getItem('user');
-         const userData = storedUser ? JSON.parse(storedUser) : null;
-         const token = userData?.token;
-
-         if (!token) {
-            alert('Please login again');
-            return;
-         }
-
-         const res = await fetch(`http://localhost:5000/api/services/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-         });
-         if (res.ok) {
-            alert('Service deactivated successfully!');
-            fetchData();
-         } else {
-            alert('Failed to deactivate service');
-         }
+         await api.delete(`/services/${id}`);
+         alert('Service deactivated successfully!');
+         fetchData();
       } catch (err) {
          console.error(err);
-         alert("Error deactivating service");
+         alert("Error deactivating service: " + (err.response?.data?.message || err.message));
       }
    }
 
    const toggleServiceStatus = async (id, currentStatus) => {
       try {
-         const storedUser = localStorage.getItem('user');
-         const userData = storedUser ? JSON.parse(storedUser) : null;
-         const token = userData?.token;
-
-         if (!token) {
-            alert('Please login again');
-            return;
-         }
-
-         const res = await fetch(`http://localhost:5000/api/services/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ isActive: !currentStatus })
-         });
-         if (res.ok) {
-            alert(`Service ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
-            fetchData();
-         } else {
-            alert('Failed to update service status');
-         }
+         await api.put(`/services/${id}`, { isActive: !currentStatus });
+         alert(`Service ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
+         fetchData();
       } catch (err) {
          console.error(err);
-         alert("Error updating service status");
+         alert("Error updating service status: " + (err.response?.data?.message || err.message));
       }
    }
 
@@ -236,7 +152,12 @@ const AdminDashboard = () => {
 
 
    if (loading) return <div className="min-h-screen flex items-center justify-center bg-blue-50 text-blue-900 font-bold text-xl">Loading Dashboard...</div>;
-   if (error) return <div className="min-h-screen flex items-center justify-center bg-blue-50 text-red-500 font-bold text-xl">{error}</div>;
+   if (error) return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 gap-4">
+         <div className="text-red-500 font-bold text-xl">{error}</div>
+         <Link to="/login" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold">Go to Login</Link>
+      </div>
+   );
 
    return (
       <div className="min-h-screen bg-blue-50 font-sans text-gray-800 pt-20">
@@ -246,16 +167,27 @@ const AdminDashboard = () => {
                   <h1 className="text-2xl font-bold text-blue-900">Admin Dashboard</h1>
                   <p className="text-gray-500 text-sm">Welcome back, {user?.username || 'Administrator'}</p>
                </div>
-               <div className="flex space-x-2">
-                  {['overview', 'users', 'providers', 'bookings', 'services'].map(tab => (
-                     <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 rounded-lg capitalize font-medium transition ${activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                     >
-                        {tab}
-                     </button>
-                  ))}
+               <div className="flex items-center space-x-6">
+                  {/* Notification Bell */}
+                  <div className="relative cursor-pointer" onClick={() => setActiveTab('messages')}>
+                     <svg className="w-6 h-6 text-gray-600 hover:text-blue-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                     {unreadMessagesCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                           {unreadMessagesCount}
+                        </span>
+                     )}
+                  </div>
+                  <div className="flex space-x-2">
+                     {['overview', 'users', 'providers', 'bookings', 'services', 'messages'].map(tab => (
+                        <button
+                           key={tab}
+                           onClick={() => setActiveTab(tab)}
+                           className={`px-4 py-2 rounded-lg capitalize font-medium transition ${activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                           {tab}
+                        </button>
+                     ))}
+                  </div>
                </div>
             </div>
          </header>
@@ -372,6 +304,11 @@ const AdminDashboard = () => {
             {/* SERVICES TAB */}
             {activeTab === 'services' && (
                <div className="space-y-8">
+                  {/* ... (Keep existing services content) ... */}
+                  {/* Re-implementing services tab content briefly to match surrounding context or assume it's kept? */
+                     /* Wait, I should not replace the whole content if I can help it. But I need to append Messages Tab after it. */
+                     /* The replace chunk targets the END of services tab block. better to append AFTER it. */
+                  }
                   <div className="bg-white p-6 rounded-xl shadow-md">
                      <h3 className="text-lg font-bold text-blue-900 mb-4">{isEditingService ? 'Edit Service' : 'Add New Service'}</h3>
                      <form onSubmit={handleServiceSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -442,8 +379,52 @@ const AdminDashboard = () => {
                </div>
             )}
 
+            {/* MESSAGES TAB */}
+            {activeTab === 'messages' && (
+               <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                     <h2 className="text-xl font-bold text-blue-900">Contact Messages</h2>
+                     <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full">{unreadMessagesCount} Unread</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                     <table className="w-full text-left">
+                        <thead className="bg-blue-50 text-blue-900 font-bold uppercase text-xs">
+                           <tr><th className="px-6 py-4">Status</th><th className="px-6 py-4">Subject</th><th className="px-6 py-4">User</th><th className="px-6 py-4">Message</th><th className="px-6 py-4">Date</th><th className="px-6 py-4">Action</th></tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                           {messages.map(msg => (
+                              <tr key={msg._id} className={msg.status === 'New' ? 'bg-blue-50' : 'hover:bg-gray-50'}>
+                                 <td className="px-6 py-4">
+                                    {msg.status === 'New' ? <span className="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold">New</span> : <span className="text-gray-500 text-xs font-bold">Read</span>}
+                                 </td>
+                                 <td className="px-6 py-4 font-bold text-blue-900">{msg.subject}</td>
+                                 <td className="px-6 py-4 text-sm">
+                                    <p className="font-bold">{msg.name}</p>
+                                    <p className="text-gray-500">{msg.email}</p>
+                                 </td>
+                                 <td className="px-6 py-4 text-sm text-gray-700 max-w-xs truncate" title={msg.message}>{msg.message}</td>
+                                 <td className="px-6 py-4 text-xs text-gray-500">{new Date(msg.createdAt).toLocaleDateString()}</td>
+                                 <td className="px-6 py-4">
+                                    {msg.status === 'New' && (
+                                       <button onClick={async () => {
+                                          try {
+                                             await api.patch(`/contact/${msg._id}`, { status: 'Read' });
+                                             fetchData(); // Refresh
+                                          } catch (e) { alert('Error updating status'); }
+                                       }} className="text-blue-600 font-bold text-xs hover:underline">Mark Read</button>
+                                    )}
+                                 </td>
+                              </tr>
+                           ))}
+                           {messages.length === 0 && <tr><td colSpan="6" className="px-6 py-8 text-center text-gray-500">No contact messages found.</td></tr>}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            )}
+
          </main>
-      </div>
+      </div >
    );
 };
 

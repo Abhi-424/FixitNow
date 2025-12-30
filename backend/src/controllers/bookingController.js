@@ -138,7 +138,9 @@ const createBooking = async (req, res) => {
       amount: amount || 0,
       status: bookingStatus,
       provider: assignedProviderId || null,
-      lastAssignedAt: assignedProviderId ? new Date() : null
+      lastAssignedAt: assignedProviderId ? new Date() : null,
+      userHasSeen: true,
+      providerHasSeen: false 
     });
 
     await booking.save();
@@ -265,6 +267,16 @@ const updateBookingStatus = async (req, res) => {
        }
     }
 
+    // Generic Notification Logic
+    if (req.user.role === 'provider') {
+       booking.userHasSeen = false;
+    } else if (req.user.role === 'user') {
+       if (booking.provider) booking.providerHasSeen = false;
+    } else if (req.user.role === 'admin') {
+       booking.userHasSeen = false;
+       if (booking.provider) booking.providerHasSeen = false;
+    }
+
     await booking.save();
     
     // Populate fields for response - Ensure detailed response
@@ -279,9 +291,40 @@ const updateBookingStatus = async (req, res) => {
   }
 };
 
+
+
+// @desc    Mark notifications as read
+// @route   PATCH /api/bookings/notifications/read
+// @access  Private (User/Provider)
+const markNotificationsRead = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    const role = req.user.role;
+    const userId = req.user.id;
+
+    if (bookingId) {
+      const update = role === 'user' ? { userHasSeen: true } : { providerHasSeen: true };
+      await Booking.findByIdAndUpdate(bookingId, update);
+    } else {
+      // Mark all
+      if (role === 'user') {
+        await Booking.updateMany({ user: userId, userHasSeen: false }, { userHasSeen: true });
+      } else if (role === 'provider') {
+        await Booking.updateMany({ provider: userId, providerHasSeen: false }, { providerHasSeen: true });
+      }
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error marking notifications:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getUserBookings,
   getProviderBookings,
   createBooking,
-  updateBookingStatus
+  updateBookingStatus,
+  markNotificationsRead
 };

@@ -4,7 +4,8 @@ const {
   getUserBookings,
   getProviderBookings,
   createBooking,
-  updateBookingStatus
+  updateBookingStatus,
+  markNotificationsRead
 } = require('../controllers/bookingController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -21,6 +22,8 @@ router.get('/provider', getProviderBookings);
 router.post('/', createBooking);
 
 // Update booking status (accept/reject for providers, or update by user)
+// Update booking status (accept/reject for providers, or update by user)
+router.patch('/notifications/read', markNotificationsRead);
 router.patch('/:id/status', updateBookingStatus);
 
 module.exports = router;

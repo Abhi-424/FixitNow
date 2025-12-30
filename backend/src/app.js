@@ -5,14 +5,21 @@ const adminRoutes = require('./routes/adminRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const userRoutes = require('./routes/userRoutes');
-const debugRoutes = require('./routes/debugRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const { errorHandler, notFound } = require('./middlewares/errorMiddleware');
 
 const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -20,7 +27,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/debug', debugRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

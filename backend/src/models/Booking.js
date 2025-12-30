@@ -63,6 +63,14 @@ const bookingSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  userHasSeen: {
+    type: Boolean,
+    default: true
+  },
+  providerHasSeen: {
+    type: Boolean,
+    default: false
+  },
   amount: {
     type: Number,
     default: 0

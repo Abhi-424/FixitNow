@@ -164,11 +164,16 @@ const reassignBooking = async (bookingId) => {
             
             // Update provider's last assigned
             await User.findByIdAndUpdate(bestProvider._id, { lastAssignedAt: new Date() });
+            
+            // Notify new provider and user
+            booking.providerHasSeen = false;
+            booking.userHasSeen = false; 
 
         } else {
             console.log('No replacement provider found.');
             booking.provider = null;
             booking.status = 'Pending'; // Back to pool
+            booking.userHasSeen = false; // Notify user it's back to pending
         }
 
         await booking.save();

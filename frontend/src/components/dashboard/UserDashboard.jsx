@@ -15,46 +15,64 @@ const UserDashboard = () => {
       activeServices: 0,
       completed: 0
    });
+   const [unreadCount, setUnreadCount] = useState(0);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState(null);
 
-   // Fetch user bookings on component mount
+   // Fetch user bookings on component mount & poll
    useEffect(() => {
-      const fetchBookings = async () => {
-         try {
-            setLoading(true);
-            setError(null);
-
-            const response = await api.get('/bookings');
-            const fetchedBookings = response.data;
-
-            setBookings(fetchedBookings);
-
-            // Calculate stats from fetched bookings
-            const totalBookings = fetchedBookings.length;
-            const activeServices = fetchedBookings.filter(
-               b => b.status === 'In Progress'
-            ).length;
-            const completed = fetchedBookings.filter(
-               b => b.status === 'Completed'
-            ).length;
-
-            setStats({
-               totalBookings,
-               activeServices,
-               completed
-            });
-
-         } catch (err) {
-            console.error('Error fetching bookings:', err);
-            setError('Failed to load dashboard data. Please try again later.');
-         } finally {
-            setLoading(false);
-         }
-      };
-
       fetchBookings();
+      const interval = setInterval(fetchBookings, 10000); // Poll every 10s
+      return () => clearInterval(interval);
    }, []);
+
+   const fetchBookings = async () => {
+      try {
+         // Don't set loading on poll
+         if (bookings.length === 0) setLoading(true); // only initial
+         setError(null);
+
+         const response = await api.get('/bookings');
+         const fetchedBookings = response.data;
+
+         setBookings(fetchedBookings);
+         setUnreadCount(fetchedBookings.filter(b => !b.userHasSeen).length);
+
+         // Calculate stats from fetched bookings
+         const totalBookings = fetchedBookings.length;
+         const activeServices = fetchedBookings.filter(
+            b => b.status === 'In Progress'
+         ).length;
+         const completed = fetchedBookings.filter(
+            b => b.status === 'Completed'
+         ).length;
+
+         setStats({
+            totalBookings,
+            activeServices,
+            completed
+         });
+
+      } catch (err) {
+         console.error('Error fetching bookings:', err);
+         if (bookings.length === 0) setError('Failed to load dashboard data. Please try again later.');
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   // Handle Notification Click
+   const handleNotificationClick = async () => {
+      if (unreadCount === 0) return;
+      try {
+         await api.patch('/bookings/notifications/read');
+         setUnreadCount(0);
+         // Update local bookings to reflected seen
+         setBookings(prev => prev.map(b => ({ ...b, userHasSeen: true })));
+      } catch (err) {
+         console.error("Failed to mark read:", err);
+      }
+   };
 
    // Handle confirming completion
    const handleConfirmCompletion = async (bookingId) => {
@@ -135,11 +153,21 @@ const UserDashboard = () => {
                      <h1 className="text-3xl font-bold text-blue-900">User Dashboard</h1>
                      <p className="text-gray-500">Welcome back, {user?.name || user?.username || 'User'}</p>
                   </div>
-                  <Link to="/services">
-                     <button className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow-md transition transform hover:scale-105">
-                        Book New Service
-                     </button>
-                  </Link>
+                  <div className="flex items-center space-x-4">
+                     <div className="relative cursor-pointer" onClick={handleNotificationClick}>
+                        <svg className="w-8 h-8 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                        {unreadCount > 0 && (
+                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
+                              {unreadCount}
+                           </span>
+                        )}
+                     </div>
+                     <Link to="/services">
+                        <button className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow-md transition transform hover:scale-105">
+                           Book New Service
+                        </button>
+                     </Link>
+                  </div>
                </div>
 
                {/* Stats Cards ... */}
