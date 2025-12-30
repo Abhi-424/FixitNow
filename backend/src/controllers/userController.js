@@ -49,8 +49,28 @@ const updateProfile = async (req, res) => {
 
     // Update fields
     user.username = username || user.username;
-    user.location = location || user.location;
     user.email = email || user.email;
+    
+    // Handle location update (expecting { address, coordinates: [lng, lat] } or just address)
+    if (location) {
+        // If location is just a string, we might want to geocode it here, 
+        // but for now let's assume valid object structure matching schema or just partial update
+        if (location.coordinates && location.address) {
+             user.location = {
+                type: 'Point',
+                coordinates: location.coordinates, // [lng, lat]
+                address: location.address
+             };
+        } else if (location.address) {
+             // If only address provided, maybe keep old coordinates or just update address?
+             // ideally we re-geocode, but let's stick to simple update or expect full object
+             user.location.address = location.address;
+        }
+    }
+
+    if (req.body.availability) {
+        user.availability = req.body.availability;
+    }
 
     const updatedUser = await user.save();
 
@@ -60,7 +80,8 @@ const updateProfile = async (req, res) => {
       email: updatedUser.email,
       role: updatedUser.role,
       location: updatedUser.location,
-      status: updatedUser.status
+      status: updatedUser.status,
+      availability: updatedUser.availability
     });
   } catch (error) {
     console.error('Error updating user profile:', error);

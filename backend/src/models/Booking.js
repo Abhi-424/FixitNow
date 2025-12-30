@@ -11,6 +11,13 @@ const bookingSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
+  rejectedProviders: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  lastAssignedAt: {
+    type: Date
+  },
   service: {
     type: String,
     required: true
@@ -25,8 +32,19 @@ const bookingSchema = new mongoose.Schema({
     default: ''
   },
   location: {
-    type: String,
-    required: true
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      required: true
+    },
+    address: {
+      type: String,
+      required: true
+    }
   },
   scheduledDate: {
     type: Date,
@@ -34,7 +52,7 @@ const bookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Accepted', 'In Progress', 'Waiting for Confirmation', 'Completed', 'Cancelled'],
+    enum: ['Pending', 'Auto-Assigned', 'Accepted', 'In Progress', 'Waiting for Confirmation', 'Completed', 'Cancelled', 'Declined'],
     default: 'Pending'
   },
   technicianCompleted: {

@@ -108,10 +108,33 @@ const getServiceById = async (req, res) => {
   }
 };
 
+const User = require('../models/User');
+
+// Get all providers for a specific service (public)
+const getServiceProviders = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find Verified providers who offer this serviceId
+    // We only select necessary fields for the card display
+    const providers = await User.find({
+      role: 'provider',
+      status: 'Verified',
+      servicesOffered: id
+    }).select('username bio experience rating location');
+    
+    res.json(providers);
+  } catch (error) {
+    console.error('Error fetching service providers:', error);
+    res.status(500).json({ message: 'Failed to fetch providers' });
+  }
+};
+
 module.exports = {
   getAllServices,
   getAllServicesAdmin,
   getServiceById,
+  getServiceProviders,
   createService,
   updateService,
   deleteService

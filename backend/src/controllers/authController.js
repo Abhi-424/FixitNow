@@ -18,6 +18,11 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Check if user is blocked
+    if (user.status === 'Blocked') {
+      return res.status(403).json({ message: 'Your account has been blocked. Please contact support.' });
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -55,12 +60,27 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user
+    const userRole = role || 'user';
+    // Providers default to Pending, Users default to Active
+    const userStatus = userRole === 'provider' ? 'Pending' : 'Active';
+
+    // Provider specific fields
+    const providerData = {};
+    if (userRole === 'provider') {
+        providerData.servicesOffered = req.body.servicesOffered || [];
+        providerData.experience = req.body.experience || 0;
+        providerData.bio = req.body.bio || '';
+        providerData.rating = 4.5; // Default rating to give them a start
+    }
+
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
-      role: role || 'user',
+      role: userRole,
       location,
+      status: userStatus,
+      ...providerData
     });
 
     // Generate JWT token

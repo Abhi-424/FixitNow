@@ -19,6 +19,9 @@ router.get('/admin/all', protect, adminOnly, getAllServicesAdmin);
 // Get single service - public route
 router.get('/:id', getServiceById);
 
+// Get providers for a service - public route
+router.get('/:id/providers', require('../controllers/serviceController').getServiceProviders);
+
 // Create service - admin only
 router.post('/', protect, adminOnly, createService);
 

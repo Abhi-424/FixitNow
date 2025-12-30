@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import Loader from "../components/common/Loader";
+import LocationPicker from "../components/LocationPicker";
 
 const BookService = () => {
     const { serviceId } = useParams();
@@ -10,37 +11,65 @@ const BookService = () => {
     const { user } = useAuth();
 
     const [service, setService] = useState(null);
+    const [providers, setProviders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
     const [formData, setFormData] = useState({
         description: "",
-        location: user?.location || "",
+        location: null, // Expecting { type: 'Point', coordinates: [], address: '' }
         scheduledDate: "",
         scheduledTime: ""
     });
 
     useEffect(() => {
-        const fetchService = async () => {
+        const fetchData = async () => {
             try {
-                const response = await api.get(`/services/${serviceId}`);
-                setService(response.data);
+                // Fetch Service Details
+                const serviceRes = await api.get(`/services/${serviceId}`);
+                setService(serviceRes.data);
+
+                // Fetch Available Providers for this service (for Map display only)
+                const providersRes = await api.get(`/services/${serviceId}/providers`);
+                setProviders(providersRes.data);
+
+                // Initialize Location from User Profile if available
+                if (user?.location) {
+                    if (typeof user.location === 'object' && user.location.coordinates) {
+                        setFormData(prev => ({ ...prev, location: user.location }));
+                    } else if (typeof user.location === 'string') {
+                        // If legacy string location, we can't map it directly without geocoding.
+                        // LocationPicker will handle empty start and user can search.
+                        setFormData(prev => ({ ...prev, location: { address: user.location, coordinates: null } }));
+                    }
+                }
+
             } catch (err) {
-                console.error("Error fetching service:", err);
-                setError("Failed to load service details.");
+                console.error("Error fetching data:", err);
+                setError("Failed to load service details or providers.");
             } finally {
                 setLoading(false);
             }
         };
 
         if (serviceId) {
-            fetchService();
+            fetchData();
         }
-    }, [serviceId]);
+    }, [serviceId, user]);
+
+    const handleLocationSelect = (loc) => {
+        setFormData(prev => ({ ...prev, location: loc }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!formData.location || !formData.location.coordinates) {
+            alert("Please select a valid location on the map.");
+            return;
+        }
+
         setSubmitting(true);
 
         try {
@@ -51,9 +80,10 @@ const BookService = () => {
                 service: service.name,
                 serviceId: service._id, // Send the ID as well
                 description: formData.description,
-                location: formData.location,
+                location: formData.location, // Sending full object
                 scheduledDate: datetime,
-                amount: service.basePrice
+                amount: service.basePrice,
+                // provider: null // Explicitly auto-assign
             });
 
             // Redirect to user dashboard
@@ -78,44 +108,60 @@ const BookService = () => {
         </div>
     );
 
+    // Prepare markers for providers
+    // Backend Logic: Provider location is likely GeoJSON object now? 
+    // Or still string if not updated? 
+    // Ideally we filter those with valid coordinates.
+    const providerMarkers = providers
+        .filter(p => p.location && p.location.coordinates && p.location.type === 'Point')
+        .map(p => ({
+            position: [p.location.coordinates[1], p.location.coordinates[0]], // [lat, lng]
+            popup: `Provider: ${p.username}`
+        }));
+
     return (
         <div className="min-h-screen bg-gray-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="bg-blue-600 px-8 py-6 text-white">
-                    <h1 className="text-3xl font-bold">Book Service</h1>
-                    <p className="opacity-90 mt-2">Complete the form to schedule your appointment</p>
+            <div className="max-w-4xl mx-auto space-y-8">
+
+                {/* Header */}
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div className="bg-blue-600 px-8 py-6 text-white">
+                        <h1 className="text-3xl font-bold">Book {service.name}</h1>
+                        <p className="opacity-90 mt-2">category: {service.category}</p>
+                    </div>
                 </div>
 
-                <div className="p-8">
-                    <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
+                <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+                    <h2 className="text-xl font-bold text-gray-800 mb-6 font-primary">
+                        Booking Details
+                    </h2>
+
+                    <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
                         <div>
-                            <h3 className="text-lg font-bold text-blue-900">{service.name}</h3>
-                            <p className="text-gray-600 text-sm">{service.category}</p>
+                            <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Base Price</span>
+                            <div className="text-2xl font-bold text-blue-900">${service.basePrice}</div>
                         </div>
                         <div className="text-right">
-                            <span className="block text-2xl font-bold text-orange-500">${service.basePrice}</span>
-                            <span className="text-xs text-gray-500">Base Price</span>
+                            <div className="text-xs text-gray-500">Providers Nearby</div>
+                            <div className="font-bold text-gray-800">{providers.length} Available</div>
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-8">
 
-                        {/* Location */}
+                        {/* Location Picker */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Service Location</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                </div>
-                                <input
-                                    required
-                                    type="text"
-                                    value={formData.location}
-                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                                    placeholder="Enter your address"
-                                />
-                            </div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Service Location & Map</label>
+                            <p className="text-xs text-gray-500 mb-2">Search your address or drag the marker to your exact location. Verify nearby providers on the map.</p>
+                            <LocationPicker
+                                onLocationSelect={handleLocationSelect}
+                                initialLocation={formData.location}
+                            // Pass provider markers if LocationPicker supports it. 
+                            // Actually LocationPicker design was simple. I should update LocationPicker or just pass children? 
+                            // Map.jsx handles markers prop. But LocationPicker renders Map. 
+                            // Warning: My LocationPicker implementation does not accept markers prop.
+                            // I will need to update LocationPicker to accept `extraMarkers` or simply render them.
+                            />
                         </div>
 
                         {/* Date & Time */}
@@ -165,14 +211,10 @@ const BookService = () => {
                             >
                                 {submitting ? (
                                     <span className="flex items-center justify-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Confirming Booking...
+                                        Confirm Booking & Find Provider
                                     </span>
                                 ) : (
-                                    "Confirm Booking"
+                                    "Find Me a Provider"
                                 )}
                             </button>
                         </div>

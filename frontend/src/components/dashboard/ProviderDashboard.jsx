@@ -29,8 +29,8 @@ const ProviderDashboard = () => {
          const response = await api.get('/bookings/provider');
          const bookings = response.data;
 
-         // Separate bookings into requests (Pending) and active jobs
-         const pendingRequests = bookings.filter(b => b.status === 'Pending');
+         // Separate bookings into requests (Pending/Auto-Assigned) and active jobs
+         const pendingRequests = bookings.filter(b => b.status === 'Pending' || b.status === 'Auto-Assigned');
          // Active jobs include Accepted, In Progress, Waiting, and Completed (for logic)
          // But usually Completed are separate. Let's keep Active as non-final ones.
          const inProgressJobs = bookings.filter(b =>
@@ -71,13 +71,22 @@ const ProviderDashboard = () => {
    const renderActionButton = (booking) => {
       switch (booking.status) {
          case 'Pending':
+         case 'Auto-Assigned':
             return (
-               <button
-                  onClick={() => handleStatusUpdate(booking._id, 'Accepted')}
-                  className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition"
-               >
-                  Accept Request
-               </button>
+               <div className="flex gap-2">
+                  <button
+                     onClick={() => handleStatusUpdate(booking._id, 'Accepted')}
+                     className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition"
+                  >
+                     Accept
+                  </button>
+                  <button
+                     onClick={() => handleStatusUpdate(booking._id, 'Declined')}
+                     className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition"
+                  >
+                     Decline
+                  </button>
+               </div>
             );
          case 'Accepted':
             return (
@@ -279,8 +288,8 @@ const ProviderDashboard = () => {
                                     <p className="text-gray-600 text-sm">{job.user?.username || 'Unknown User'}</p>
                                  </div>
                                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${job.status === 'In Progress' ? 'bg-orange-100 text-orange-600' :
-                                       job.status === 'Accepted' ? 'bg-blue-100 text-blue-600' :
-                                          'bg-yellow-100 text-yellow-700'
+                                    job.status === 'Accepted' ? 'bg-blue-100 text-blue-600' :
+                                       'bg-yellow-100 text-yellow-700'
                                     }`}>
                                     {job.status}
                                  </span>
