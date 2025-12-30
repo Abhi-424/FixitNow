@@ -57,7 +57,9 @@ const LocationPicker = ({ onLocationSelect, initialLocation, markers = [] }) => 
                 address: display_name,
                 coordinates: [parseFloat(lon), parseFloat(lat)], // backend format [lng, lat]
             });
-        } catch (err) {
+        } catch (err
+            
+        ) {
             setError("Failed to fetch location");
         } finally {
             setLoading(false);
