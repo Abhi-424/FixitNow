@@ -34,14 +34,15 @@ const BookService = () => {
                 const providersRes = await api.get(`/services/${serviceId}/providers`);
                 setProviders(providersRes.data);
 
-                // Initialize Location from User Profile if available
+                // Initialize Location from User Profile
                 if (user?.location) {
-                    if (typeof user.location === 'object' && user.location.coordinates) {
+                    if (typeof user.location === 'object') {
+                        // Whether it has coordinates or not, we pass it. 
+                        // If no coordinates, backend will geocode based on address.
                         setFormData(prev => ({ ...prev, location: user.location }));
                     } else if (typeof user.location === 'string') {
-                        // If legacy string location, we can't map it directly without geocoding.
-                        // LocationPicker will handle empty start and user can search.
-                        setFormData(prev => ({ ...prev, location: { address: user.location, coordinates: null } }));
+                        // Legacy string location
+                        setFormData(prev => ({ ...prev, location: { address: user.location, coordinates: null, type: 'Point' } }));
                     }
                 }
 
@@ -65,8 +66,9 @@ const BookService = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.location || !formData.location.coordinates) {
-            alert("Please select a valid location on the map.");
+        // Validate: Must have at least an address
+        if (!formData.location || !formData.location.address) {
+            alert("Please select a location or enter an address.");
             return;
         }
 

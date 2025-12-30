@@ -126,7 +126,15 @@ const findBestProvider = async (serviceId, coordinates, date, timeSlot, excluded
 
     } catch (error) {
         console.error('Error finding provider:', error);
-        throw error; // Propagate up
+        
+        // Check for specific geospatial index error
+        if (error.message && error.message.includes('unable to find index for $geoNear')) {
+            console.error('CRITICAL: Geospatial index (2dsphere) is missing on User.location field');
+            console.error('Run: db.users.createIndex({ location: "2dsphere" }) in MongoDB');
+        }
+        
+        // Return null instead of throwing to allow graceful degradation
+        return null;
     }
 };
 

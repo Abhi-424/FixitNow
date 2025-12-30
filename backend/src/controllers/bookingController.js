@@ -81,15 +81,28 @@ const createBooking = async (req, res) => {
           bookingLocation.coordinates = [geo.lng, geo.lat];
           bookingLocation.address = geo.display_name || location;
        } else {
-          // Fallback if geocoding fails (maybe allow creation with empty coords? or fail)
-          // For MVP, lets fail or allow empty with warning. 
-          // But strict requirement says "Convert address into lat/lng".
-          // If fail, we can't do auto-assign. 
           return res.status(400).json({ message: 'Could not find location for address provided.' });
        }
-    } else if (location && location.coordinates && location.address) {
-       // It's already an object (from frontend LocationPicker)
-       bookingLocation = location;
+    } else if (location && typeof location === 'object') {
+       // It's an object (from frontend LocationPicker or User Profile)
+       
+       if (location.coordinates && location.coordinates.length === 2 && location.coordinates[0] !== null) {
+          // Valid coordinates present
+          bookingLocation = location;
+       } else if (location.address) {
+          // Address present but no coordinates -> Geocode it
+          const geo = await geocodeAddress(location.address);
+          if (geo) {
+             bookingLocation.coordinates = [geo.lng, geo.lat];
+             bookingLocation.address = geo.display_name || location.address;
+             // Ensure type is set
+             bookingLocation.type = 'Point';
+          } else {
+             return res.status(400).json({ message: 'Could not resolve location coordinates. Please select a point on the map.' });
+          }
+       } else {
+          return res.status(400).json({ message: 'Invalid location data. Address is required.' });
+       }
     } else {
        return res.status(400).json({ message: 'Invalid location data' });
     }
@@ -100,22 +113,28 @@ const createBooking = async (req, res) => {
     
     // If no specific provider requested, find one
     if (!assignedProviderId) {
-        const bestProvider = await findBestProvider(
-            serviceId, 
-            bookingLocation.coordinates, 
-            scheduledDate, 
-            "10:00" // Default start time for auto-assign check
-        );
-        
-        if (bestProvider) {
-            assignedProviderId = bestProvider._id;
-            bookingStatus = 'Auto-Assigned';
+        try {
+            const bestProvider = await findBestProvider(
+                serviceId, 
+                bookingLocation.coordinates, 
+                scheduledDate, 
+                "10:00" // Default start time for auto-assign check
+            );
             
-            // Update provider's last assigned time for fairness
-            await User.findByIdAndUpdate(assignedProviderId, { lastAssignedAt: new Date() });
-        } else {
-            console.log('No provider found for auto-assignment');
-            // Remains Pending
+            if (bestProvider) {
+                assignedProviderId = bestProvider._id;
+                bookingStatus = 'Auto-Assigned';
+                
+                // Update provider's last assigned time for fairness
+                await User.findByIdAndUpdate(assignedProviderId, { lastAssignedAt: new Date() });
+            } else {
+                console.log('No provider found for auto-assignment');
+                // Remains Pending
+            }
+        } catch (assignError) {
+            console.error('Auto-assignment error:', assignError.message);
+            // If auto-assignment fails (e.g., no geospatial index), continue with Pending status
+            console.log('Continuing with Pending status due to assignment error');
         }
     } else {
         // ... (Validate specific provider if provided manually - existing logic)
