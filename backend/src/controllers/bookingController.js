@@ -317,7 +317,7 @@ const updateBookingStatus = async (req, res) => {
 // @access  Private (User/Provider)
 const markNotificationsRead = async (req, res) => {
   try {
-    const { bookingId } = req.body;
+    const { bookingId } = req.body || {};
     const role = req.user.role;
     const userId = req.user.id;
 

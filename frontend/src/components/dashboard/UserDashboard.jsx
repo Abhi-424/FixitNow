@@ -29,7 +29,7 @@ const UserDashboard = () => {
    const fetchBookings = async () => {
       try {
          // Don't set loading on poll
-         if (bookings.length === 0) setLoading(true); // only initial
+         // if (bookings.length === 0) setLoading(true); // Removed to prevent reloading flicker
          setError(null);
 
          const response = await api.get('/bookings');

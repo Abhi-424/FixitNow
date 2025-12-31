@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         // Verify we have a valid object with at least a token or user info
-        if (parsedUser && (parsedUser.token || parsedUser.email || parsedUser.id)) {
+        if (parsedUser && (parsedUser.token || parsedUser.email || parsedUser.id) && parsedUser.role) {
           setUser(parsedUser);
           setIsAuthenticated(true);
         } else {
