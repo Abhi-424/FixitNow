@@ -1,0 +1,384 @@
+{
+  "services": [
+    {
+      "id": "694e20a3424d7273061f7924",
+      "name": "pet",
+      "category": "Pets"
+    },
+    {
+      "id": "694d3d3d3fd1632ba4be7d92",
+      "name": "AC Servicing",
+      "category": "AC Repair"
+    },
+    {
+      "id": "694d3d3d3fd1632ba4be7d91",
+      "name": "Plumbing Repair",
+      "category": "Plumbing"
+    },
+    {
+      "id": "694d5e1026353f5f7cd417ee",
+      "name": "Transport",
+      "category": "Moving"
+    },
+    {
+      "id": "694d3d3d3fd1632ba4be7d93",
+      "name": "Home Cleaning",
+      "category": "Cleaning"
+    },
+    {
+      "id": "694d3d3d3fd1632ba4be7d95",
+      "name": "Painting Service",
+      "category": "Painting"
+    },
+    {
+      "id": "694fbf759d267541aa74ce93",
+      "name": "Test Plumbing",
+      "category": "Plumbing"
+    },
+    {
+      "id": "694d3d3d3fd1632ba4be7d94",
+      "name": "Electrical Work",
+      "category": "Electrical"
+    }
+  ],
+  "providers": [
+    {
+      "id": "69538bbb10ed0bab3060c033",
+      "username": "kowshik",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d92",
+        "694d3d3d3fd1632ba4be7d94"
+      ],
+      "location": {
+        "coordinates": [
+          81.970556,
+          16.4232813
+        ],
+        "address": "Odalarevu, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69538ccf10ed0bab3060c039",
+      "username": "abhi",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d93"
+      ],
+      "location": {
+        "coordinates": [
+          81.970556,
+          16.4232813
+        ],
+        "address": "Odalarevu, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69538dec10ed0bab3060c03e",
+      "username": "rohit",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d91",
+        "694fbf759d267541aa74ce93"
+      ],
+      "location": {
+        "coordinates": [
+          81.970556,
+          16.4232813
+        ],
+        "address": "Odalarevu, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69538eaf10ed0bab3060c043",
+      "username": "chandu",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d95",
+        "694d3d3d3fd1632ba4be7d94"
+      ],
+      "location": {
+        "coordinates": [
+          81.970556,
+          16.4232813
+        ],
+        "address": "Odalarevu, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69538f49da72c421e16a562d",
+      "username": "Sandeep",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d93"
+      ],
+      "location": {
+        "coordinates": [
+          82.0032621,
+          16.5777179
+        ],
+        "address": "Amalapuram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533201, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69538f7610ed0bab3060c048",
+      "username": "chinnu",
+      "status": "Verified",
+      "servicesOffered": [
+        "694fbf759d267541aa74ce93",
+        "694d3d3d3fd1632ba4be7d91",
+        "694d3d3d3fd1632ba4be7d93"
+      ],
+      "location": {
+        "coordinates": [
+          81.970556,
+          16.4232813
+        ],
+        "address": "Odalarevu, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "695390c810ed0bab3060c04d",
+      "username": "shiva",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d92",
+        "694d3d3d3fd1632ba4be7d95"
+      ],
+      "location": {
+        "coordinates": [
+          81.982303,
+          16.444261
+        ],
+        "address": "Government Hospital,Bendamurlanka, Amalapuram - Odalarevu Road, Bendamurulanka, Allavaram, East Godavari, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69539124da72c421e16a5632",
+      "username": "manikanta",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d91",
+        "694fbf759d267541aa74ce93"
+      ],
+      "location": {
+        "coordinates": [
+          82.0032621,
+          16.5777179
+        ],
+        "address": "Amalapuram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533201, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "6953919010ed0bab3060c052",
+      "username": "raja",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d93",
+        "694d3d3d3fd1632ba4be7d94",
+        "694d3d3d3fd1632ba4be7d95"
+      ],
+      "location": {
+        "coordinates": [
+          81.982303,
+          16.444261
+        ],
+        "address": "Government Hospital,Bendamurlanka, Amalapuram - Odalarevu Road, Bendamurulanka, Allavaram, East Godavari, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69539224da72c421e16a5637",
+      "username": "deepak",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d94",
+        "694d3d3d3fd1632ba4be7d95"
+      ],
+      "location": {
+        "coordinates": [
+          82.0032621,
+          16.5777179
+        ],
+        "address": "Amalapuram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533201, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "6953934ada72c421e16a563c",
+      "username": "gnani",
+      "status": "Verified",
+      "servicesOffered": [
+        "694fbf759d267541aa74ce93"
+      ],
+      "location": {
+        "coordinates": [
+          82.0032621,
+          16.5777179
+        ],
+        "address": "Amalapuram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533201, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "6953942210ed0bab3060c059",
+      "username": "manoj",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d91",
+        "694d3d3d3fd1632ba4be7d95"
+      ],
+      "location": {
+        "coordinates": [
+          82.0006181,
+          16.4446857
+        ],
+        "address": "Komaragiripatnam, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "6953951610ed0bab3060c05e",
+      "username": "prasad ",
+      "status": "Verified",
+      "servicesOffered": [
+        "694fbf759d267541aa74ce93",
+        "694d3d3d3fd1632ba4be7d94"
+      ],
+      "location": {
+        "coordinates": [
+          82.0006181,
+          16.4446857
+        ],
+        "address": "Komaragiripatnam, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69539556da72c421e16a564d",
+      "username": "pavan",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d92"
+      ],
+      "location": {
+        "coordinates": [
+          82.0032621,
+          16.5777179
+        ],
+        "address": "Amalapuram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533201, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "695395c910ed0bab3060c063",
+      "username": "vinod ",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d92",
+        "694d3d3d3fd1632ba4be7d91"
+      ],
+      "location": {
+        "coordinates": [
+          82.0006181,
+          16.4446857
+        ],
+        "address": "Komaragiripatnam, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69539b74da72c421e16a5652",
+      "username": "kiran",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d92",
+        "694d3d3d3fd1632ba4be7d91"
+      ],
+      "location": {
+        "coordinates": [
+          82.1078853,
+          16.6442012
+        ],
+        "address": "Mummidivaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533216, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69539c47da72c421e16a5657",
+      "username": "venkat",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d94",
+        "694d3d3d3fd1632ba4be7d93"
+      ],
+      "location": {
+        "coordinates": [
+          81.9878662,
+          16.5140914
+        ],
+        "address": "Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533217, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69539e41da72c421e16a565d",
+      "username": "santhosh",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d93",
+        "694d3d3d3fd1632ba4be7d95"
+      ],
+      "location": {
+        "coordinates": [
+          81.9792622,
+          16.548277
+        ],
+        "address": "Peruru, Amalapuram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533218, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "69539fb2da72c421e16a5662",
+      "username": "lova",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d93",
+        "694d3d3d3fd1632ba4be7d91"
+      ],
+      "location": {
+        "coordinates": [
+          79.0796962,
+          14.2520923
+        ],
+        "address": "Cheyyeru, Nandalur, Annamayya, Andhra Pradesh, India",
+        "type": "Point"
+      }
+    },
+    {
+      "id": "6953a0bada72c421e16a5667",
+      "username": "vinay ",
+      "status": "Verified",
+      "servicesOffered": [
+        "694d3d3d3fd1632ba4be7d94",
+        "694d3d3d3fd1632ba4be7d91"
+      ],
+      "location": {
+        "coordinates": [
+          81.970556,
+          16.4232813
+        ],
+        "address": "Odalarevu, Allavaram, Dr. B. R. Ambedkar Konaseema, Andhra Pradesh, 533210, India",
+        "type": "Point"
+      }
+    }
+  ]
+}

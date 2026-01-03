@@ -39,9 +39,9 @@ api.interceptors.response.use(
       const { status } = error.response;
       if (status === 401) {
         console.error('Unauthorized access. Please login again.');
-        // Optionally redirect to login or clear storage
-        // localStorage.removeItem('user');
-        // window.location.href = '/login';
+        // Automatically log out user
+        localStorage.removeItem('user');
+        window.location.href = '/login';
       } else if (status === 403) {
         console.error('Access forbidden.');
       } else if (status === 500) {

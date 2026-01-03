@@ -288,7 +288,22 @@ const AdminDashboard = () => {
                            <tr key={b._id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 font-medium">{b.service}</td>
                               <td className="px-6 py-4 text-sm text-gray-600">{b.user?.username || 'Deleted User'}</td>
-                              <td className="px-6 py-4 text-sm text-gray-600">{b.provider?.username || 'Unassigned'}</td>
+                              <td className="px-6 py-4 text-sm text-gray-600">
+                                 {b.provider ? (
+                                    <div>
+                                       <div className="font-bold text-blue-900">{b.provider.username}</div>
+                                       <div className="text-xs flex items-center gap-1">
+                                          <span className="text-yellow-500 font-bold">★ {b.provider.rating || '0.0'}</span>
+                                          <span className={`px-1 rounded text-[10px] font-bold ${b.provider.status === 'Verified' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                             {b.provider.status}
+                                          </span>
+                                       </div>
+                                       <div className="text-xs text-gray-400">{b.provider.email}</div>
+                                    </div>
+                                 ) : (
+                                    <span className="text-orange-500 font-bold italic text-xs">Unassigned</span>
+                                 )}
+                              </td>
                               <td className="px-6 py-4"><span className="px-2 py-1 bg-gray-100 rounded text-xs font-bold">{b.status}</span></td>
                               <td className="px-6 py-4 flex gap-2">
                                  <button onClick={() => handleBookingStatus(b._id, 'Cancelled')} className="text-red-500 text-xs font-bold hover:underline">Force Cancel</button>

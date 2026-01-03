@@ -15,24 +15,14 @@ const getUserBookings = async (req, res) => {
   }
 };
 
-// Get all bookings assigned to provider OR available in pool
+// Get all bookings assigned to provider
 const getProviderBookings = async (req, res) => {
   try {
     // Find bookings where:
-    // 1. Provider is assigned to this user (Assigned jobs)
-    // 2. Provider is null AND status is 'Pending' (Open requests) - ONLY IF VERIFIED
+    // 1. Provider is explicitly assigned to this user
+    // Strict ownership: No "pool" visibility for unassigned jobs.
 
-    const canViewPool = req.user.role === 'provider' && req.user.status === 'Verified';
-
-    const query = {
-      $or: [
-        { provider: req.user.id }
-      ]
-    };
-
-    if (canViewPool) {
-      query.$or.push({ provider: null, status: 'Pending' });
-    }
+    const query = { provider: req.user.id };
 
     const bookings = await Booking.find(query)
       .populate('user', 'username email location')
@@ -113,6 +103,7 @@ const createBooking = async (req, res) => {
     
     // If no specific provider requested, find one
     if (!assignedProviderId) {
+        console.log(`Triggering auto-assignment for Service ID: ${serviceId}`);
         try {
             const bestProvider = await findBestProvider(
                 serviceId, 
@@ -122,17 +113,18 @@ const createBooking = async (req, res) => {
             );
             
             if (bestProvider) {
+                console.log(`Auto-assigned Success: ${bestProvider.username} (${bestProvider._id})`);
                 assignedProviderId = bestProvider._id;
                 bookingStatus = 'Auto-Assigned';
                 
                 // Update provider's last assigned time for fairness
                 await User.findByIdAndUpdate(assignedProviderId, { lastAssignedAt: new Date() });
             } else {
-                console.log('No provider found for auto-assignment');
+                console.log('No eligible provider found near this location for this service.');
                 // Remains Pending
             }
         } catch (assignError) {
-            console.error('Auto-assignment error:', assignError.message);
+            console.error('Auto-assignment CRITICAL ERROR:', assignError.message);
             // If auto-assignment fails (e.g., no geospatial index), continue with Pending status
             console.log('Continuing with Pending status due to assignment error');
         }

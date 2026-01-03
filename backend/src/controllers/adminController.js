@@ -95,7 +95,7 @@ const getAllBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
             .populate('user', 'username email')
-            .populate('provider', 'username email')
+            .populate('provider', 'username email rating status role')
             .sort({ createdAt: -1 });
         res.json(bookings);
     } catch (error) {

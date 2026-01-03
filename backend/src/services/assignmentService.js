@@ -14,8 +14,10 @@ const findBestProvider = async (serviceId, coordinates, date, timeSlot, excluded
     try {
         console.log(`Finding provider for Service: ${serviceId}, Excluded: ${excludedProviderIds.length}`);
 
-        const maxDistance = 20000; // 20km search radius
+        const maxDistance = 100000; // 100km search radius
         
+        console.log(`Searching within ${maxDistance/1000}km for Service ID: ${serviceId} at coords: ${coordinates}`);
+
         // Format date to string YYYY-MM-DD
         const dateStr = new Date(date).toISOString().split('T')[0];
 
@@ -61,23 +63,19 @@ const findBestProvider = async (serviceId, coordinates, date, timeSlot, excluded
         // if schema is complex, let's stick to a simpler find first if aggregate is risky without exact schema knowledge.
         // But $geoNear requires aggregation or special find.
         
+        const mongoose = require('mongoose');
+        const queryServiceId = typeof serviceId === 'string' ? new mongoose.Types.ObjectId(serviceId) : serviceId;
+
         // Let's use standard find with $near which is easier for now, then filter in memory for complex rules
         const providers = await User.find({
             role: 'provider',
             status: 'Verified',
-            servicesOffered: serviceId,
+            servicesOffered: queryServiceId,
             _id: { $nin: excludedProviderIds },
             location: {
                 $near: {
                     $geometry: { type: 'Point', coordinates: coordinates },
                     $maxDistance: maxDistance
-                }
-            },
-            // Availability Check
-            availability: {
-                $elemMatch: {
-                   date: dateStr,
-                   slots: timeSlot
                 }
             }
         }).limit(10); // Find top 10 closest eligible providers
