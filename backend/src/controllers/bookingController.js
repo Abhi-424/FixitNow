@@ -186,18 +186,21 @@ const updateBookingStatus = async (req, res) => {
         return res.status(403).json({ message: 'Account not verified. Cannot accept or update jobs.' });
       }
 
-      // 1. Accepting or Declining a pending booking
+      // 1. Accepting or Declining an auto-assigned booking
       if (status === 'Accepted' || status === 'Declined') {
-        if (booking.status !== 'Pending') {
-          return res.status(400).json({ message: 'Booking is not pending' });
+        // Only allow Accept/Decline for Auto-Assigned bookings
+        if (booking.status !== 'Auto-Assigned') {
+          return res.status(400).json({ message: 'Booking must be auto-assigned to accept or decline' });
         }
-        if (booking.provider && booking.provider.toString() !== req.user.id) {
-          return res.status(400).json({ message: 'Booking already assigned to another provider' });
+        
+        // Ensure booking is assigned to current provider
+        if (!booking.provider || booking.provider.toString() !== req.user.id) {
+          return res.status(403).json({ message: 'Not authorized. Booking not assigned to you.' });
         }
         
          if (status === 'Accepted') {
-            booking.provider = req.user.id;
-            booking.status = status;
+            // Provider is already assigned, just update status
+            booking.status = 'Accepted';
          } else {
             // Declined Logic
             // 1. Add to rejected list
