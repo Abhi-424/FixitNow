@@ -74,7 +74,10 @@ const Navbar = () => {
       <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
         {/* Brand Logo */}
         <Link to="/" className="text-2xl font-bold text-blue-700 tracking-wide flex items-center gap-2">
-          <span>FixitNow</span>
+          <span className="text-2xl font-bold tracking-wide">
+            <span className="text-blue-700">Fixit</span>
+            <span className="text-orange-500">Now</span>
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
